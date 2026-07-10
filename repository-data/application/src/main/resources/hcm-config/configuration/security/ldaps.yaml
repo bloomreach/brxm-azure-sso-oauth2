@@ -7,7 +7,7 @@ definitions:
       hippoldap:disabled: true
       hippoldap:initialfactory: com.sun.jndi.ldap.LdapCtxFactory
       hippoldap:principal: SSO_LDAP_PRINCIPAL
-      hippoldap:providerurl: ''
+      hippoldap:providerurl: ldaps://localhost:636
       hippoldap:searchbase: ''
       hipposys:classname: org.bloomreach.xm.cms.sso.CustomLdapSecurityProvider
       /hipposys:userprovider:
