@@ -4,13 +4,13 @@ import static org.bloomreach.xm.cms.sso.SsoConstants.LOCAL_LOGIN_ENABLED;
 import static org.bloomreach.xm.cms.sso.SsoConstants.LOCAL_LOGIN_HEADER;
 
 import com.azure.spring.cloud.autoconfigure.implementation.aad.security.AadWebApplicationHttpSecurityConfigurer;
-import com.google.common.base.Strings;
 import java.io.IOException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -35,13 +35,15 @@ public class SecurityConfig {
 
   private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
+  @Value("${SSO_ENABLED:false}")
+  private boolean ssoEnabled;
+
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.with(AadWebApplicationHttpSecurityConfigurer.aadWebApplication(), Customizer.withDefaults());
 
     //check if SSO is enabled
-    String sso = System.getenv(SsoConstants.SSO_ENABLED);
-    if (!Strings.isNullOrEmpty(sso) && Boolean.parseBoolean(sso)) {
+    if (ssoEnabled) {
       log.info("SSO is enabled - securing CMS endpoints.");
       http.authorizeHttpRequests(authorize -> authorize
           //utility servlets/endpoints are not secured, they have their own internal auth
