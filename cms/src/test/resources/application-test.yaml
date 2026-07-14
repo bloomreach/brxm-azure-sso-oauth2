@@ -8,14 +8,15 @@ spring:
         credential:
           client-id: brxm-cms
           client-secret: test-secret
-  # Placeholder issuer — overridden by @DynamicPropertySource in SsoIntegrationTest,
-  # required here so Spring context starts without a real Azure tenant.
+  # Placeholder issuer — overridden by @DynamicPropertySource in SsoIntegrationTest with the real
+  # Keycloak URL. Must start with https:// here so LocalOidcSecurityConfig (which activates on
+  # http://) does not trigger for MockMvc tests that have no real OIDC server.
   security:
     oauth2:
       client:
         provider:
           azure:
-            issuer-uri: http://localhost:9999/realms/test-realm
+            issuer-uri: https://login.microsoftonline.com/test-realm/v2.0
         registration:
           azure:
             client-id: brxm-cms
@@ -23,6 +24,9 @@ spring:
             scope: openid,profile,email
 
 SSO_ENABLED: "true"
+
+sso:
+  logout-url: http://localhost:9999/realms/test-realm/protocol/openid-connect/logout
 
 # Resolve the brXM platform placeholder that LoggingApplicationListener picks up from the classpath
 log4j.configurationFile: "classpath:log4j2-test.xml"

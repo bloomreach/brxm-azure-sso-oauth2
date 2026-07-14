@@ -1,12 +1,14 @@
 package org.bloomreach.xm.cms.sso;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
+import com.unboundid.ldap.listener.InMemoryDirectoryServer;
+import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
+import com.unboundid.ldap.listener.InMemoryListenerConfig;
 import com.unboundid.ldap.sdk.LDAPConnection;
+import com.unboundid.ldap.sdk.LDAPSearchException;
 import com.unboundid.ldap.sdk.SearchResultEntry;
+import com.unboundid.ldap.sdk.SearchScope;
 import com.unboundid.ldif.LDIFReader;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
-import java.io.InputStream;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -21,18 +23,16 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.web.client.RestTemplate;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import com.unboundid.ldap.sdk.Entry;
-import com.unboundid.ldap.sdk.SearchScope;
-import com.unboundid.ldap.sdk.LDAPSearchException;
-import com.unboundid.ldap.listener.InMemoryDirectoryServer;
-import com.unboundid.ldap.listener.InMemoryDirectoryServerConfig;
-import com.unboundid.ldap.listener.InMemoryListenerConfig;
+
+import java.io.InputStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * Full integration test: Keycloak (OIDC) + embedded LDAP.
@@ -41,9 +41,6 @@ import com.unboundid.ldap.listener.InMemoryListenerConfig;
  * The test realm is pre-configured with a test user that also exists in the LDAP tree,
  * mirroring the production setup where every SSO user is in LDAP.
  *
- * Note: Spring Cloud Azure's active-directory-endpoint is pointed at Keycloak's realm URL.
- * The /v2.0 suffix that Azure normally appends is suppressed by providing a full
- * issuer-uri via spring.security.oauth2.client.provider.azure, which takes precedence.
  */
 @Tag("docker")
 @SpringBootTest(
@@ -93,11 +90,12 @@ class SsoIntegrationTest {
   static void configureProperties(DynamicPropertyRegistry registry) {
     // Point the AAD starter at Keycloak's realm — issuer-uri overrides Azure's
     // active-directory-endpoint+tenant-id URL construction entirely.
-    String keycloakRealmUrl = KEYCLOAK.getAuthServerUrl() + "realms/test-realm";
-    registry.add("spring.cloud.azure.active-directory.enabled", () -> "true");
-    registry.add("spring.cloud.azure.active-directory.profile.tenant-id", () -> "test-realm");
-    registry.add("spring.cloud.azure.active-directory.credential.client-id", () -> "brxm-cms");
-    registry.add("spring.cloud.azure.active-directory.credential.client-secret", () -> "test-secret");
+    String keycloakBase = KEYCLOAK.getAuthServerUrl();
+    if (!keycloakBase.endsWith("/")) keycloakBase += "/";
+    String keycloakRealmUrl = keycloakBase + "realms/test-realm";
+    registry.add("SSO_TENANT_ID", () -> "test-realm");
+    registry.add("SSO_APP_ID", () -> "brxm-cms");
+    registry.add("SSO_APP_SECRET", () -> "test-secret");
     // Override the issuer URI directly so Keycloak's discovery endpoint is used
     registry.add("spring.security.oauth2.client.provider.azure.issuer-uri", () -> keycloakRealmUrl);
 
@@ -184,21 +182,22 @@ class SsoIntegrationTest {
 
   @Test
   void ldap_usernameMatchesBetweenKeycloakAndLdap() throws Exception {
-    // The username in Keycloak (alice@example.com) must match the LDAP mail attribute —
-    // this is what AzureUserManager.authenticate() and LoginFilter depend on.
+    // Keycloak's "name" claim (firstName + " " + lastName) must equal the LDAP cn attribute.
+    // LoginFilter passes principal.getName() as the brXM username; LdapUserManager looks it
+    // up via nameattribute=cn — so these two must be identical for login to succeed.
     try (Keycloak admin = Keycloak.getInstance(
         KEYCLOAK.getAuthServerUrl(), "master", "admin", "admin", "admin-cli")) {
 
-      String keycloakEmail = admin.realm("test-realm").users()
-          .search("alice").get(0).getEmail();
+      UserRepresentation alice = admin.realm("test-realm").users().search("alice").get(0);
+      String keycloakName = alice.getFirstName() + " " + alice.getLastName();
 
       try (LDAPConnection conn = new LDAPConnection("localhost", LDAP.getListenPort("default"))) {
         conn.bind("cn=admin,dc=example,dc=com", "admin");
         SearchResultEntry ldapEntry = conn.searchForEntry(
-            "dc=example,dc=com", SearchScope.SUB, "(mail=" + keycloakEmail + ")");
+            "dc=example,dc=com", SearchScope.SUB, "(cn=" + keycloakName + ")");
 
         assertThat(ldapEntry).isNotNull();
-        assertThat(ldapEntry.getAttributeValue("mail")).isEqualTo(keycloakEmail);
+        assertThat(ldapEntry.getAttributeValue("cn")).isEqualTo(keycloakName);
       }
     }
   }

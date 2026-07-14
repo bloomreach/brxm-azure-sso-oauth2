@@ -87,7 +87,7 @@
     <!-- Docker-dependent tests are excluded by default.
          The brXM parent Surefire config reads ${excludedGroups} and ${groups} directly.
          Override on the command line: -Dgroups=docker -DexcludedGroups= -->
-    <excludedGroups>docker</excludedGroups>
+    <excludedGroups>docker,manual</excludedGroups>
   </properties>
 
   <build>
@@ -129,6 +129,13 @@
       <id>docker-tests</id>
       <properties>
         <groups>docker</groups>
+        <excludedGroups/>
+      </properties>
+    </profile>
+    <profile>
+      <id>local-sso</id>
+      <properties>
+        <groups>manual</groups>
         <excludedGroups/>
       </properties>
     </profile>

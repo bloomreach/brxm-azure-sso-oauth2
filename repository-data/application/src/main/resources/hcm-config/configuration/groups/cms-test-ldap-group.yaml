@@ -1,0 +1,16 @@
+definitions:
+  config:
+    /hippo:configuration/hippo:groups/cms-test-ldap-group:
+      jcr:primaryType: hipposys:externalgroup
+      hippoldap:dn: cn=cms-test-ldap-group,ou=groups,dc=example,dc=com
+      hipposys:members:
+        .meta:category: system
+        .meta:add-new-system-values: true
+        type: string
+        value: [alice example]
+      hipposys:securityprovider: ldaps
+      hipposys:userroles:
+        .meta:category: system
+        .meta:add-new-system-values: true
+        type: string
+        value: [xm.default-user.system-admin, xm.repository-browser.user]

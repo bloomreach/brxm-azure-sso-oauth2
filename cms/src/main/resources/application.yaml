@@ -13,9 +13,19 @@ spring:
         credential:
           client-id: ${SSO_APP_ID}
           client-secret: ${SSO_APP_SECRET}
+  security:
+    oauth2:
+      client:
+        provider:
+          azure:
+            # Used by LocalOidcSecurityConfig to construct Keycloak endpoints for local dev.
+            # Set SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AZURE_ISSUER_URI=http://localhost:{port}/realms/test-realm
+            # to redirect the OAuth2 login flow to a local Keycloak instance instead of Azure AD.
+            issuer-uri: ${SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_AZURE_ISSUER_URI:https://login.microsoftonline.com/${SSO_TENANT_ID}/v2.0}
 
-logging:
-  level:
-    org:
-      springframework:
-        security: info
+sso:
+  # Override with SSO_LOGOUT_URL for local dev (e.g. http://localhost:8180/realms/test-realm/protocol/openid-connect/logout)
+  # SSO_TENANT_ID defaults to "common" so the CMS starts cleanly without SSO env vars (value unused when SSO_ENABLED=false)
+  logout-url: ${SSO_LOGOUT_URL:https://login.microsoftonline.com/${SSO_TENANT_ID:common}/oauth2/v2.0/logout}
+
+
