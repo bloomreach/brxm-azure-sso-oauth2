@@ -4,10 +4,10 @@ definitions:
       jcr:primaryType: hippoldap:securityprovider
       hippoldap:authentication: simple
       hippoldap:credentials: SSO_LDAP_CREDENTIALS
-      hippoldap:disabled: true
+      hippoldap:disabled: false
       hippoldap:initialfactory: com.sun.jndi.ldap.LdapCtxFactory
       hippoldap:principal: SSO_LDAP_PRINCIPAL
-      hippoldap:providerurl: ldaps://localhost:636
+      hippoldap:providerurl: ldap://localhost:1389
       hippoldap:searchbase: ''
       hipposys:classname: org.bloomreach.xm.cms.sso.CustomLdapSecurityProvider
       /hipposys:userprovider:
@@ -16,8 +16,8 @@ definitions:
         hipposys:dirlevels: 0
         /hippoldap:search:
           jcr:primaryType: hippoldap:usersearch
-          hippoldap:basedn: ''
-          hippoldap:filter: (&(cn=*)(objectCategory=organizationalPerson))
+          hippoldap:basedn: ou=people,dc=example,dc=com
+          hippoldap:filter: (&(cn=*)(objectClass=organizationalPerson))
           hippoldap:nameattribute: cn
         /hippoldap:mapping[1]:
           jcr:primaryType: hippoldap:mapping
@@ -39,8 +39,8 @@ definitions:
         hipposys:dirlevels: 0
         /hippoldap:search:
           jcr:primaryType: hippoldap:groupsearch
-          hippoldap:basedn: ''
-          hippoldap:filter: (cn=*)
+          hippoldap:basedn: ou=groups,dc=example,dc=com
+          hippoldap:filter: (cn=CMS-*)
           hippoldap:memberattribute: member
           hippoldap:membernamematcher: <dn>
           hippoldap:nameattribute: cn

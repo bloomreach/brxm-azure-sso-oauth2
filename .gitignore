@@ -43,3 +43,7 @@ Temporary Items
 
 # Local HotSwap config
 hotswap-agent.properties
+
+# Upgrades
+.brxm*
+.mcp*

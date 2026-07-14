@@ -146,6 +146,7 @@
 
     <!-- project logging -->
     <Logger name="org.example" level="debug"/>
+    <Logger name="org.bloomreach.xm.cms.sso" level="debug"/>
 
     <Root level="warn">
       <AppenderRef ref="site"/>

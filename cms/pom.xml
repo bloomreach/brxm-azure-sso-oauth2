@@ -18,7 +18,78 @@
       <version>${project.version}</version>
       <type>pom</type>
     </dependency>
+
+    <!-- Test dependencies -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Embedded Tomcat for RANDOM_PORT integration tests -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <version>${spring-security.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Keycloak Testcontainers -->
+    <dependency>
+      <groupId>com.github.dasniko</groupId>
+      <artifactId>testcontainers-keycloak</artifactId>
+      <version>3.4.0</version>
+      <scope>test</scope>
+      <exclusions>
+        <!-- resteasy-jaxb-provider pulls older versions of jaxb and jackson-jakarta-rs artefacts
+             that conflict with the versions managed by the brXM platform / Spring Boot BOM.
+             Exclude them so the correct managed versions are used on the test classpath. -->
+        <exclusion>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-runtime</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.glassfish.jaxb</groupId>
+          <artifactId>jaxb-core</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+          <artifactId>jackson-jakarta-rs-base</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <version>1.19.8</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-testcontainers</artifactId>
+      <version>${spring-boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- Embedded LDAP -->
+    <dependency>
+      <groupId>com.unboundid</groupId>
+      <artifactId>unboundid-ldapsdk</artifactId>
+      <version>7.0.4</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
+  <properties>
+    <!-- Docker-dependent tests are excluded by default.
+         The brXM parent Surefire config reads ${excludedGroups} and ${groups} directly.
+         Override on the command line: -Dgroups=docker -DexcludedGroups= -->
+    <excludedGroups>docker,manual</excludedGroups>
+  </properties>
+
   <build>
     <finalName>cms</finalName>
     <plugins>
@@ -36,7 +107,7 @@
       </plugin>
       <plugin>
         <groupId>org.codehaus.cargo</groupId>
-        <artifactId>cargo-maven2-plugin</artifactId>
+        <artifactId>cargo-maven3-plugin</artifactId>
         <configuration>
           <configuration>
             <type>runtime</type>
@@ -52,4 +123,21 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>docker-tests</id>
+      <properties>
+        <groups>docker</groups>
+        <excludedGroups/>
+      </properties>
+    </profile>
+    <profile>
+      <id>local-sso</id>
+      <properties>
+        <groups>manual</groups>
+        <excludedGroups/>
+      </properties>
+    </profile>
+  </profiles>
 </project>

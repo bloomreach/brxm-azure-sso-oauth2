@@ -23,52 +23,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-oauth2-client</artifactId>
       <version>${spring-boot.version}</version>
-      <exclusions>
-          <exclusion>
-              <groupId>org.springframework.security</groupId>
-              <artifactId>spring-security-oauth2-client</artifactId>
-          </exclusion>
-          <exclusion>
-              <groupId>org.springframework.boot</groupId>
-              <artifactId>spring-boot-starter-logging</artifactId>
-          </exclusion>
-          <exclusion>
-              <groupId>org.yaml</groupId>
-              <artifactId>snakeyaml</artifactId>
-          </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.security</groupId>
-      <artifactId>spring-security-oauth2-client</artifactId>
-      <version>${spring-security.version}</version>
-      <exclusions>
-          <exclusion>
-              <groupId>com.nimbusds</groupId>
-              <artifactId>oauth2-oidc-sdk</artifactId>
-          </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>com.nimbusds</groupId>
-      <artifactId>oauth2-oidc-sdk</artifactId>
-      <version>${nimbus-oauth2-oidc.version}</version>
-      <exclusions>
-          <exclusion>
-              <groupId>net.minidev</groupId>
-              <artifactId>json-smart</artifactId>
-          </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>net.minidev</groupId>
-      <artifactId>json-smart</artifactId>
-      <version>${json-smart.version}</version>
     </dependency>
     <dependency>
       <groupId>com.azure.spring</groupId>
       <artifactId>spring-cloud-azure-starter-active-directory</artifactId>
-      <version>${spring-cloud-azure-starter.version}</version>
     </dependency>
     <dependency>
       <groupId>com.onehippo.cms7</groupId>

@@ -1,0 +1,38 @@
+dn: dc=example,dc=com
+objectClass: top
+objectClass: domain
+dc: example
+
+dn: ou=people,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: people
+
+dn: ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+dn: cn=CMS-Admin,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: CMS-Admin
+member: cn=Alice Example,ou=people,dc=example,dc=com
+
+dn: cn=cms-test-ldap-group,ou=groups,dc=example,dc=com
+objectClass: top
+objectClass: groupOfNames
+cn: cms-test-ldap-group
+member: cn=Alice Example,ou=people,dc=example,dc=com
+
+dn: cn=Alice Example,ou=people,dc=example,dc=com
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Alice Example
+sn: Example
+givenName: Alice
+mail: alice@example.com
+uid: alice
+userPassword: Password1!
